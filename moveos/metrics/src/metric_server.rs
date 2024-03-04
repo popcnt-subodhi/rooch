@@ -79,7 +79,7 @@ pub fn push_metrics(push_server_url: String, auth_username: Option<String>, auth
     });
 
     match prometheus::push_metrics(
-        "starcoin_push",
+        "rooch_push",
         hostname_grouping_key(),
         &push_server_url,
         metric_families,
