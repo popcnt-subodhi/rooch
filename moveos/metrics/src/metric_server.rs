@@ -18,9 +18,9 @@ use std::net::SocketAddr;
 fn encode_metrics(encoder: impl Encoder, registry: &Registry) -> Vec<u8> {
     let metric_families = registry.gather();
     let mut buffer = vec![];
-    //if encode error, just return empty body.
+    // if encode error, just return empty body.
     if let Err(e) = encoder.encode(&metric_families, &mut buffer) {
-        log::error!("Encode metrics error: {:?}", e);
+        log::error!("encode metrics error: {:?}", e);
     }
     buffer
 }
@@ -32,7 +32,7 @@ async fn serve_metrics(
     let mut resp = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/metrics") => {
-            //Prometheus server expects metrics to be on host:port/metrics
+            // Prometheus server expects metrics to be on host:port/metrics
             let encoder = TextEncoder::new();
             let buffer = encode_metrics(encoder, &registry);
             *resp.body_mut() = Body::from(buffer);
@@ -58,7 +58,7 @@ pub async fn start_server(addr: SocketAddr, registry: Registry) -> anyhow::Resul
     {
         let process_collector = crate::process_collector::ProcessCollector::for_self()?;
         if let Err(e) = registry.register(Box::new(process_collector)) {
-            log::warn!("Register process_collector metric failed: {:?}", e);
+            log::warn!("register process_collector metric failed: {:?}", e);
         }
     }
     let make_service = make_service_fn(|_| {
@@ -67,7 +67,7 @@ pub async fn start_server(addr: SocketAddr, registry: Registry) -> anyhow::Resul
     });
 
     let server = Server::bind(&addr).serve(make_service);
-    log::info!("Metric server started at {}", addr);
+    log::info!("metric server started at {}", addr);
     server.await.map_err(|e| e.into())
 }
 
@@ -79,7 +79,7 @@ pub fn push_metrics(push_server_url: String, auth_username: Option<String>, auth
     });
 
     match prometheus::push_metrics(
-        "rooch_push",
+        "moveos_push",
         hostname_grouping_key(),
         &push_server_url,
         metric_families,
