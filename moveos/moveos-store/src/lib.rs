@@ -46,7 +46,7 @@ pub const CONFIG_STARTUP_INFO_PREFIX_NAME: ColumnFamilyName = "config_startup_in
 pub const CONFIG_GENESIS_PREFIX_NAME: ColumnFamilyName = "config_genesis";
 
 ///db store use prefix_name vec to init
-/// Please note that adding a prefix needs to be added in vec simultaneously, remember！！
+///Please note that adding a prefix needs to be added in vec simultaneously, remember！！
 static VEC_PREFIX_NAME: Lazy<Vec<ColumnFamilyName>> = Lazy::new(|| {
     vec![
         STATE_NODE_PREFIX_NAME,

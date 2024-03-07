@@ -193,6 +193,7 @@ impl AccountKeystore for InMemKeystore {
 }
 
 impl InMemKeystore {
+    #[allow(clippy::map_identity)]
     pub fn new_insecure_for_tests(initial_key_number: usize) -> Self {
         let keys = (0..initial_key_number)
             .map(|_| get_key_pair_from_red())

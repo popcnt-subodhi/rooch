@@ -1643,6 +1643,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmake"
+version = "0.1.50"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a31c789563b815f77f4250caee12365734369f942439b7defd71e18a48197130"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "coarsetime"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4782,18 +4791,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "librocksdb-sys"
-version = "0.11.0+8.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3386f101bcb4bd252d8e9d2fb41ec3b0862a15a62b478c355b2982efa469e3e"
+name = "librocksdb_sys"
+version = "0.1.0"
+source = "git+https://github.com/tikv/rust-rocksdb.git#05081c26d5d9c67e816058645ba7cc09886a714d"
 dependencies = [
  "bindgen",
  "bzip2-sys",
  "cc",
- "glob",
+ "cmake",
  "libc",
+ "libtitan_sys",
  "libz-sys",
  "lz4-sys",
+ "openssl-sys",
+ "snappy-sys",
  "zstd-sys",
 ]
 
@@ -4819,12 +4830,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "libtitan_sys"
+version = "0.0.1"
+source = "git+https://github.com/tikv/rust-rocksdb.git#05081c26d5d9c67e816058645ba7cc09886a714d"
+dependencies = [
+ "bzip2-sys",
+ "cc",
+ "cmake",
+ "libc",
+ "libz-sys",
+ "lz4-sys",
+ "snappy-sys",
+ "zstd-sys",
+]
+
+[[package]]
 name = "libz-sys"
 version = "1.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d97137b25e321a73eef1418d1d5d2eda4d77e12813f8e6dead84bc52c5870a7b"
 dependencies = [
  "cc",
+ "libc",
  "pkg-config",
  "vcpkg",
 ]
@@ -7907,12 +7934,11 @@ dependencies = [
 
 [[package]]
 name = "rocksdb"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb6f170a4041d50a0ce04b0d2e14916d6ca863ea2e422689a5b694395d299ffe"
+version = "0.3.0"
+source = "git+https://github.com/tikv/rust-rocksdb.git#05081c26d5d9c67e816058645ba7cc09886a714d"
 dependencies = [
  "libc",
- "librocksdb-sys",
+ "librocksdb_sys",
 ]
 
 [[package]]
@@ -9833,6 +9859,16 @@ dependencies = [
  "sha2 0.10.8",
  "thiserror",
  "tiny-keccak",
+]
+
+[[package]]
+name = "snappy-sys"
+version = "0.1.0"
+source = "git+https://github.com/tikv/rust-snappy.git?branch=static-link#8c12738bad811397600455d6982aff754ea2ac44"
+dependencies = [
+ "cmake",
+ "libc",
+ "pkg-config",
 ]
 
 [[package]]

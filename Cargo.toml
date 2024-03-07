@@ -197,7 +197,6 @@ unescape = "0.1.0"
 tempfile = "3.2.0"
 regex = "1.8.4"
 walkdir = "2.3.3"
-rocksdb = { version = "0.21.0", features = ["snappy", "lz4", "zstd", "zlib", "multi-threaded-cf"], default-features = false }
 prometheus = "0.13.3"
 coarsetime = "0.1.22"
 hyper = { version = "0.14.12", features = ["full"] }
@@ -247,12 +246,8 @@ xxhash-rust = "0.8.8"
 base64 = "0.21.3"
 #criterion-cpu-time = "0.1.0"
 pprof = { version = "0.13.0", features = ["flamegraph", "criterion", "cpp", "frame-pointer"] }
-
-
-
 celestia-rpc = { git = "https://github.com/eigerco/celestia-node-rs.git", rev = "129272e8d926b4c7badf27a26dea915323dd6489" }
 celestia-types = { git = "https://github.com/eigerco/celestia-node-rs.git", rev = "129272e8d926b4c7badf27a26dea915323dd6489" }
-
 opendal = "0.44.1"
 
 # Note: the BEGIN and END comments below are required for external tooling. Do not remove.
@@ -326,6 +321,12 @@ move-ir-types = { git = "https://github.com/rooch-network/move", rev = "ef13deb1
 # read-write-set-dynamic = { path = "../move/language/read-write-set/dynamic" }
 # move-bytecode-source-map  = { path = "../move/language/move-ir-compiler/move-bytecode-source-map" }
 # move-ir-types = { path = "../move/language/move-ir/types" }
+
+[workspace.dependencies.rocksdb]
+git = "https://github.com/tikv/rust-rocksdb.git"
+package = "rocksdb"
+features = ["encryption"]
+
 [profile.release]
 debug = false
 overflow-checks = true

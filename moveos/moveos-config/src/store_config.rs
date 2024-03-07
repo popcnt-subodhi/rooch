@@ -52,7 +52,7 @@ impl Default for RocksdbConfig {
             // Set max_open_files to 4096 instead of -1 to avoid keep-growing memory in accordance
             // with the number of files.
             max_open_files: Self::default_max_open_files(),
-            // For now we set the max total WAL size to be 1G. This config can be useful when column
+            // For now, we set the max total WAL size to be 1G. This config can be useful when column
             // families are updated at non-uniform frequencies.
             max_total_wal_size: 1u64 << 30,
             // For sst table sync every size to be 1MB

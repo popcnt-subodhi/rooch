@@ -22,7 +22,7 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-/// Type alias to improve readability.
+///Type alias to improve readability.
 pub type ColumnFamilyName = &'static str;
 
 ///Store instance type define

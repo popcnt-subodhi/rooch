@@ -71,6 +71,7 @@ impl From<&[u8]> for Bloom {
 }
 
 impl<'de> Deserialize<'de> for Bloom {
+    #[allow(clippy::unnecessary_fallible_conversions)]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,

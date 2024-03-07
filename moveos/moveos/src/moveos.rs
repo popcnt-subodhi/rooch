@@ -374,7 +374,7 @@ impl MoveOS {
                                 .execute_function_bypass_visibility(gas_validate_func_call)?;
 
                             return if !return_value.is_empty() {
-                                let first_return_value = return_value.get(0).unwrap();
+                                let first_return_value = return_value.first().unwrap();
                                 Ok(Some(
                                     bcs::from_bytes::<bool>(first_return_value.value.as_slice())
                                         .expect(

@@ -420,7 +420,7 @@ impl ExecutorActor {
                             return if function_execution_result.vm_status == VMStatus::Executed {
                                 let return_value = function_execution_result.return_values.unwrap();
                                 if !return_value.is_empty() {
-                                    let first_return_value = return_value.get(0).unwrap();
+                                    let first_return_value = return_value.first().unwrap();
                                     Ok(Some(
                                         bcs::from_bytes::<bool>(first_return_value.value.as_slice())
                                             .expect(
@@ -482,7 +482,7 @@ impl ExecutorActor {
 
                 if function_execution_result.vm_status == VMStatus::Executed {
                     let return_value = function_execution_result.return_values.unwrap();
-                    let first_return_value = return_value.get(0).unwrap();
+                    let first_return_value = return_value.first().unwrap();
 
                     let balance = bcs::from_bytes::<move_core_types::u256::U256>(
                         first_return_value.value.as_slice(),

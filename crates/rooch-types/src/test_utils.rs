@@ -112,6 +112,7 @@ pub fn random_rooch_transaction_with_move_action(move_action: MoveActionType) ->
     RoochTransaction::new(tx_data, authenticator)
 }
 
+#[allow(clippy::unnecessary_fallible_conversions)]
 pub fn random_ethereum_transaction() -> EthereumTransaction {
     let sender = RoochAddress::random();
     let sequence_number = U256::zero();

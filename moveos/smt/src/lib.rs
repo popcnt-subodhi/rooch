@@ -219,7 +219,7 @@ where
         let iter = self.iter(None)?;
 
         let mut data = Vec::new();
-        for (_data_size, item) in iter.enumerate() {
+        for item in iter {
             let (k, v) = item?;
             data.push((k, v));
         }

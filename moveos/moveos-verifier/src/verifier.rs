@@ -906,7 +906,7 @@ fn check_gas_validate_function(
     return_signature: &Signature,
 ) -> bool {
     // Content of the func_signature array has already been checked above, so unwrap directly here.
-    let first_parameter = func_signature.0.get(0).unwrap();
+    let first_parameter = func_signature.0.first().unwrap();
 
     let check_struct_type = |struct_handle_idx: &StructHandleIndex| -> bool {
         let struct_name = struct_full_name_from_sid(struct_handle_idx, view);
@@ -935,7 +935,7 @@ fn check_gas_validate_function(
     }
 
     // Content of the return_signature array has already been checked above, so unwrap directly here.
-    let first_return_signature = return_signature.0.get(0).unwrap();
+    let first_return_signature = return_signature.0.first().unwrap();
     matches!(first_return_signature, SignatureToken::Bool)
 }
 
@@ -945,7 +945,7 @@ fn check_gas_charge_post_function(
     return_signature: &Signature,
 ) -> bool {
     // Content of the func_signature array has already been checked above, so unwrap directly here.
-    let first_parameter = func_signature.0.get(0).unwrap();
+    let first_parameter = func_signature.0.first().unwrap();
 
     let check_struct_type = |struct_handle_idx: &StructHandleIndex| -> bool {
         let struct_name = struct_full_name_from_sid(struct_handle_idx, view);
@@ -984,7 +984,7 @@ fn check_gas_charge_post_function(
     }
 
     // Content of the return_signature array has already been checked above, so unwrap directly here.
-    let first_return_signature = return_signature.0.get(0).unwrap();
+    let first_return_signature = return_signature.0.first().unwrap();
     matches!(first_return_signature, SignatureToken::Bool)
 }
 
