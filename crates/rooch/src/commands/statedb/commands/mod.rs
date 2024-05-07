@@ -31,12 +31,15 @@ pub fn init_statedb(
     store_config.merge_with_opt_with_init(&opt, Arc::clone(&arc_base_config), false)?;
 
     let moveos_db_path = store_config.get_moveos_store_dir();
-    let moveosdb = MoveOSDB::new(StoreInstance::new_db_instance(RocksDB::new(
+
+    let rocks_db = RocksDB::new(
         moveos_db_path,
         moveos_store::StoreMeta::get_column_family_names().to_vec(),
         store_config.rocksdb_config(true),
         None,
-    )?))?;
+    )?;
+
+    let moveosdb = MoveOSDB::new(StoreInstance::new_db_instance(rocks_db))?;
     let startup_info = moveosdb.config_store.get_startup_info()?;
 
     if let Some(ref startup_info) = startup_info {

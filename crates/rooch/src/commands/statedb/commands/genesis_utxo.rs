@@ -39,7 +39,7 @@ use std::str::FromStr;
 use std::time::SystemTime;
 use tracing::log;
 
-pub const BATCH_SIZE: usize = 5000;
+pub const BATCH_SIZE: usize = 524287 * 4;
 pub const SCRIPT_TYPE_P2MS: &str = "p2ms";
 pub const SCRIPT_TYPE_P2PK: &str = "p2pk";
 pub const SCRIPT_TYPE_NON_STANDARD: &str = "non-standard";
@@ -63,13 +63,14 @@ pub struct GenesisUTXOCommand {
 
     #[clap(flatten)]
     pub context_options: WalletContextOptions,
+
+    #[clap(long, short = 'b')]
+    pub batch_size: Option<usize>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct UTXOData {
-    /// The txid of the UTXO
+pub struct UTXORawEntry {
     pub txid: String,
-    /// The vout of the UTXO
     pub vout: u32,
     pub value: u64,
     pub script: String,
@@ -77,7 +78,7 @@ pub struct UTXOData {
     pub address: String,
 }
 
-impl UTXOData {
+impl UTXORawEntry {
     pub fn new(
         txid: String,
         vout: u32,
@@ -124,12 +125,41 @@ impl AddressMappingData {
     }
 }
 
+pub struct GenesisUTXOImporter {
+    pub input: PathBuf,
+    pub base_data_dir: Option<PathBuf>,
+    pub chain_id: Option<RoochChainID>,
+    pub context_options: WalletContextOptions,
+    pub batch_size: Option<usize>,
+}
+
+impl GenesisUTXOImporter {
+    pub fn new(
+        input: PathBuf,
+        base_data_dir: Option<PathBuf>,
+        chain_id: Option<RoochChainID>,
+        context_options: WalletContextOptions,
+        batch_size: Option<usize>,
+    ) -> Self {
+        Self {
+            input,
+            base_data_dir,
+            chain_id,
+            context_options,
+            batch_size,
+        }
+    }
+
+    pub fn preprocess() {}
+}
+
 impl GenesisUTXOCommand {
     pub async fn execute(self) -> RoochResult<()> {
         let mut _context = self.context_options.build()?;
         // let client = context.get_client().await?;
 
-        println!("Start progress task, batch_size: {:?}", BATCH_SIZE);
+        let batch_size = self.batch_size.unwrap_or(BATCH_SIZE);
+        println!("Start progress task, batch_size: {:?}", batch_size);
         let (root, moveos_store) = init_statedb(self.base_data_dir.clone(), self.chain_id.clone())?;
         let utxo_store_id = BitcoinUTXOStore::object_id();
         let address_mapping_id = AddressMappingWrapper::mapping_object_id();
@@ -141,7 +171,7 @@ impl GenesisUTXOCommand {
             address_mapping_id, reverse_mapping_object_id
         );
 
-        let mut _start_time = SystemTime::now();
+        let start_time = SystemTime::now();
         let file_name = self.input.display().to_string();
         let reader = BufReader::new(File::open(file_name)?);
 
@@ -154,6 +184,10 @@ impl GenesisUTXOCommand {
 
         let mut utxo_count: u64 = 0;
         let mut address_mapping_count: u64 = 0;
+
+        let mut count_in_rnd = 0;
+        let rnd_size = batch_size;
+        let mut round_start_time = SystemTime::now();
         for line in reader.lines() {
             let line = line?;
             // skip the first line
@@ -175,14 +209,15 @@ impl GenesisUTXOCommand {
             let script = str_list[6].to_string();
             let script_type = str_list[7].to_string();
             let address = str_list[8].to_string();
-            let utxo_data = UTXOData::new(txid, vout, amount, script, script_type, address.clone());
+            let utxo_data =
+                UTXORawEntry::new(txid, vout, amount, script, script_type, address.clone());
             if address.is_empty() && !utxo_data.is_valid_empty_address() {
                 println!("Invalid utxo data: {:?}", utxo_data);
                 continue;
             }
             utxo_datas.push(utxo_data);
 
-            if utxo_datas.len() >= BATCH_SIZE {
+            if utxo_datas.len() >= batch_size {
                 let (new_utxostore_state_root, address_mapping_datas) = Self::process_utxos(
                     &moveos_store,
                     pre_utxostore_state_root,
@@ -194,7 +229,11 @@ impl GenesisUTXOCommand {
                     pre_utxostore_state_root,
                     new_utxostore_state_root
                 );
-                println!("process_utxos utxo count: {}", utxo_count);
+                println!(
+                    "Finish progress utxo count: {} in: {:?}",
+                    utxo_count,
+                    round_start_time.elapsed().unwrap()
+                );
                 pre_utxostore_state_root = new_utxostore_state_root;
 
                 let (
@@ -221,6 +260,17 @@ impl GenesisUTXOCommand {
                 address_mapping_count += incr_count;
             }
             utxo_count += 1;
+
+            if count_in_rnd >= rnd_size {
+                let elapsed = round_start_time.elapsed().unwrap();
+                println!(
+                    "Finish progress utxo count+addr_map: {} in: {:?}",
+                    utxo_count, elapsed
+                );
+                count_in_rnd = 0;
+                round_start_time = SystemTime::now();
+            }
+            count_in_rnd += 1;
         }
 
         if !utxo_datas.is_empty() {
@@ -300,7 +350,8 @@ impl GenesisUTXOCommand {
         let startup_info = moveos_store.get_config_store().get_startup_info()?;
         println!("New startup_info: {:?}", startup_info);
 
-        println!("Finish progress task.");
+        let elapsed = start_time.elapsed().unwrap();
+        println!("Finish progress task in: {:?}", elapsed);
 
         Ok(())
     }
@@ -308,7 +359,7 @@ impl GenesisUTXOCommand {
     fn process_utxos(
         moveos_store: &MoveOSStore,
         pre_utxostore_state_root: H256,
-        utxo_datas: Vec<UTXOData>,
+        utxo_datas: Vec<UTXORawEntry>,
     ) -> Result<(H256, Vec<AddressMappingData>)> {
         // process utxo statedb
         let utxos_and_address_mapping_datas = utxo_datas
@@ -392,7 +443,7 @@ impl GenesisUTXOCommand {
     }
 
     fn create_utxo_object_and_address_mapping_data(
-        mut utxo_data: UTXOData,
+        mut utxo_data: UTXORawEntry,
     ) -> Result<(ObjectEntity<UTXO>, Option<AddressMappingData>)> {
         let txid = Txid::from_str(utxo_data.txid.as_str())?.into_address();
 
